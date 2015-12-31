@@ -1,11 +1,8 @@
-package com.example.zhl.notedemo;
+package com.example.zhl.notedemo.ui;
 
-import android.app.ActionBar;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
+import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -15,11 +12,21 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
+import android.widget.ListView;
+
+import com.example.zhl.notedemo.R;
+import com.example.zhl.notedemo.db.NoteDb;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    private Toolbar toolbar;
+    private Button note_new;
+    private ListView mListView;
+    private MyAdapter adapter;
+    private NoteDb noteDb;
+    private Cursor cursor;
+    private static String[] PROJECTION = new String[]{"title","date"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +34,22 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        noteDb = NoteDb.getInstance(this);
+        //cursor = noteDb.db.query("note",null,null,null,null,null,null);
+        mListView = (ListView) findViewById(R.id.list_view);
+        cursor = noteDb.queryAll();
+        adapter = new MyAdapter(MainActivity.this,cursor);
+        mListView.setAdapter(adapter);
+
+        note_new = (Button) findViewById(R.id.note_new);
+        note_new.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this,EditNoteActivity.class);
+                startActivityForResult(intent,100);
+            }
+        });
 
 /*        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -45,6 +68,21 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode){
+            case 100:                  //新增便签返回列表时
+                cursor = noteDb.queryAll();
+                adapter.changeCursor(cursor);
+                adapter.notifyDataSetChanged();
+                break;
+            case 101:                  //修改便签返回列表时
+
+                break;
+        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
@@ -87,6 +125,8 @@ public class MainActivity extends AppCompatActivity
 
         if (id == R.id.nav_all) {
             // Handle the camera action
+
+
         } else if (id == R.id.nav_work) {
 
 
