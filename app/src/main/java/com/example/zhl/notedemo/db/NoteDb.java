@@ -42,7 +42,7 @@ public class NoteDb {
 
     //查询所有数据库数据（all）
     public Cursor queryAll(){
-        return db.query("note",null,null,null,null,null,null);
+        return db.query("note",null,null,null,null,null,"date desc");
     }
 
 
@@ -55,5 +55,12 @@ public class NoteDb {
     //查询所有数据库数据（share）
 
     //查询所有数据库数据（about）
+
+    //删除选中的数据
+    public void delete(String cursorId){
+        db.delete("note","_id = ?",new String[]{cursorId});
+    }
+
+
 
 }

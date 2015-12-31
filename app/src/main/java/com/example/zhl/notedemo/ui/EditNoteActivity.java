@@ -1,5 +1,6 @@
 package com.example.zhl.notedemo.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
@@ -11,6 +12,7 @@ import com.example.zhl.notedemo.R;
 import com.example.zhl.notedemo.db.NoteDb;
 
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -20,6 +22,7 @@ public class EditNoteActivity extends AppCompatActivity {
 
     private TextView title,content,date;
     private NoteDb noteDb;
+    private String starttempdate,starttempcontent,starttemptitle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,6 +32,16 @@ public class EditNoteActivity extends AppCompatActivity {
         title = (TextView) findViewById(R.id.title);
         content = (TextView) findViewById(R.id.content);
         date = (TextView) findViewById(R.id.date);
+
+        Intent intent = getIntent();
+        starttempdate = intent.getStringExtra("editdate");
+        if (!starttempdate.equals("")){
+            starttemptitle = intent.getStringExtra("edittitle");
+            starttempcontent = intent.getStringExtra("editcontent");
+            title.setText(starttemptitle);
+            content.setText(starttempcontent);
+            date.setText(starttempdate);
+        }
     }
 
     @Override
@@ -39,7 +52,7 @@ public class EditNoteActivity extends AppCompatActivity {
         if (tempContent.equals("")&&tempTitle.equals("")){
             Toast.makeText(this,"标题和内容都为空",Toast.LENGTH_SHORT).show();
         }else {
-            DateFormat dateFormat = DateFormat.getDateInstance();
+            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             Date date = new Date();
             String tempDate = dateFormat.format(date);
             noteDb = NoteDb.getInstance(this);
