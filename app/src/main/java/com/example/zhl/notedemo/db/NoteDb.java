@@ -40,6 +40,15 @@ public class NoteDb {
         values.clear();
     }
 
+    //更新便签
+    public void updateNote(String tempTitle, String tempContent, String tempDate,String starttempdate){
+        ContentValues values = new ContentValues();
+        values.put("title",tempTitle);
+        values.put("content",tempContent);
+        values.put("date", tempDate);
+        db.update("note", values, "date = ?", new String[]{starttempdate});
+    }
+
     //查询所有数据库数据（all）
     public Cursor queryAll(){
         return db.query("note",null,null,null,null,null,"date desc");
@@ -60,6 +69,8 @@ public class NoteDb {
     public void delete(String cursorId){
         db.delete("note","_id = ?",new String[]{cursorId});
     }
+
+
 
 
 

@@ -24,7 +24,6 @@
         android:id="@+id/date"
         android:layout_width="match_parent"
         android:layout_height="30dp"
-        android:text="hello"
         android:gravity="center_vertical"
         android:textColor="@color/colorAccent"
         android:layout_alignParentBottom="true"

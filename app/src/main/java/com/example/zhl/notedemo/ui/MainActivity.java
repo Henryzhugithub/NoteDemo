@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity
 
     private LinearLayout mLinearLayout;
     private int count;
+    private Long selectId;
 
 
     @Override
@@ -117,7 +118,7 @@ public class MainActivity extends AppCompatActivity
                         count--;
                     }
                     delete.setText("删除(" + count + ")");
-                    Long selectId = adapter.getItemId(position);
+                    selectId = adapter.getItemId(position);
                     recordStatus.put(position,isCheck);
                     recordCursorIdStatus.put(selectId,isCheck);
                 }else {
@@ -141,14 +142,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 if (adapter.ismultiMode){
-                    mLinearLayout.setVisibility(View.GONE);
-                    adapter.ismultiMode = false;
-                    adapter.choseAll = false;
-                    adapter.notifyDataSetChanged();
-                    recordCursorIdStatus.clear();
-                    recordStatus.clear();
-                    count = 0;
-                    delete.setText("删除("+count+")");
+                    cancelAction();
                 }
             }
         });
@@ -158,6 +152,18 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View v) {
               if (adapter.ismultiMode){
                   adapter.choseAll = true;
+                  Cursor cursor = noteDb.queryAll();
+                  if (cursor.moveToFirst()){
+                      do {
+                          int i = 0;
+                          Long id = cursor.getLong(cursor.getColumnIndex("_id"));
+                          recordStatus.put(0,true);
+                          recordCursorIdStatus.put(id,true);
+                          i++;
+                      }while (cursor.moveToNext());
+                  }
+                  cursor.close();
+
                   adapter.notifyDataSetChanged();
                   delete.setText("删除(" + adapter.getCount() + ")");
                   Log.d("count",adapter.getCount()+"");
@@ -179,6 +185,8 @@ public class MainActivity extends AppCompatActivity
                   adapter.ismultiMode = false;
                   adapter.notifyDataSetChanged();
                   mLinearLayout.setVisibility(View.GONE);
+                  note_new.setVisibility(View.VISIBLE);
+                  count = 0;
                   recordCursorIdStatus.clear();
                   recordStatus.clear();
 
@@ -190,14 +198,14 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        cursor = noteDb.queryAll();
+        adapter.changeCursor(cursor);
         switch (requestCode){
             case 100:                  //新增便签返回列表时
-                cursor = noteDb.queryAll();
-                adapter.changeCursor(cursor);
                 adapter.notifyDataSetChanged();
                 break;
             case 101:                  //修改便签返回列表时
-
+                adapter.notifyDataSetChanged();
                 break;
         }
         super.onActivityResult(requestCode, resultCode, data);
@@ -208,9 +216,23 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
-        } else {
+        } else if (adapter.ismultiMode){
+          cancelAction();
+        }else {
             super.onBackPressed();
         }
+    }
+
+    private void cancelAction(){
+        mLinearLayout.setVisibility(View.GONE);
+        note_new.setVisibility(View.VISIBLE);
+        adapter.ismultiMode = false;
+        adapter.choseAll = false;
+        adapter.notifyDataSetChanged();
+        recordCursorIdStatus.clear();
+        recordStatus.clear();
+        count = 0;
+        delete.setText("删除("+count+")");
     }
 
     @Override

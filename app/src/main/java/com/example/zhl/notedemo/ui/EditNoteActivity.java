@@ -35,22 +35,41 @@ public class EditNoteActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         starttempdate = intent.getStringExtra("editdate");
-        if (!starttempdate.equals("")){
-            starttemptitle = intent.getStringExtra("edittitle");
-            starttempcontent = intent.getStringExtra("editcontent");
-            title.setText(starttemptitle);
-            content.setText(starttempcontent);
-            date.setText(starttempdate);
+        if (starttempdate == null){
+            return;
         }
+        starttemptitle = intent.getStringExtra("edittitle");
+        starttempcontent = intent.getStringExtra("editcontent");
+        title.setText(starttemptitle);
+        content.setText(starttempcontent);
+        date.setText(starttempdate);
     }
+
 
     @Override
     public void onBackPressed() {
         super.onBackPressed();
         String tempTitle = title.getText().toString();
         String tempContent = content.getText().toString();
-        if (tempContent.equals("")&&tempTitle.equals("")){
-            Toast.makeText(this,"标题和内容都为空",Toast.LENGTH_SHORT).show();
+
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date date = new Date();
+        String tempDate = dateFormat.format(date);
+        noteDb = NoteDb.getInstance(this);
+
+        if (starttempdate == null){
+
+            noteDb.saveNote(tempTitle,tempContent,tempDate);
+        }else if (tempTitle == starttemptitle&&tempContent == starttempcontent){
+            return;
+        }else {
+            noteDb.updateNote(tempTitle, tempContent, tempDate,starttempdate);
+        }
+
+
+/*        if (tempContent.equals("")&&tempTitle.equals("")){
+            return;
+            // Toast.makeText(this,"标题和内容都为空",Toast.LENGTH_SHORT).show();
         }else {
             DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             Date date = new Date();
@@ -58,7 +77,7 @@ public class EditNoteActivity extends AppCompatActivity {
             noteDb = NoteDb.getInstance(this);
             noteDb.saveNote(tempTitle,tempContent,tempDate);
 
-        }
+        }*/
     }
 
     @Override
