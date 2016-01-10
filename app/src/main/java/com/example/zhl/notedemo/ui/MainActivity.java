@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -16,12 +17,15 @@ import android.view.MenuItem;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.zhl.notedemo.R;
 import com.example.zhl.notedemo.db.NoteDb;
+import com.example.zhl.notedemo.utils.SPHelper;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +34,7 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private Button note_new,cancel,choseAll,delete;
+    private EditText searchEdit;
     private ListView mListView;
     private MyAdapter adapter;
     private NoteDb noteDb;
@@ -42,20 +47,28 @@ public class MainActivity extends AppCompatActivity
     private int count;
     private Long selectId;
 
+    private int isHomeFlag = 1;
+
+    private Toolbar toolbar;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        toolbar.setTitle("全部");
 
         cancel = (Button) findViewById(R.id.cancel);
         choseAll = (Button) findViewById(R.id.chose_all);
         delete = (Button) findViewById(R.id.delete);
         mLinearLayout = (LinearLayout) findViewById(R.id.linearlayout);
+        searchEdit = (EditText) findViewById(R.id.search_edit);
 
         noteDb = NoteDb.getInstance(this);
+        noteDb.updateDefaultClass();
         //cursor = noteDb.db.query("note",null,null,null,null,null,null);
         mListView = (ListView) findViewById(R.id.list_view);
         cursor = noteDb.queryAll();
@@ -99,7 +112,6 @@ public class MainActivity extends AppCompatActivity
                 mLinearLayout.setVisibility(View.VISIBLE);
                 note_new.setVisibility(View.GONE);
                 adapter.notifyDataSetChanged();
-
                 return true;
             }
         });
@@ -122,17 +134,19 @@ public class MainActivity extends AppCompatActivity
                     recordStatus.put(position,isCheck);
                     recordCursorIdStatus.put(selectId,isCheck);
                 }else {
-                    Toast.makeText(MainActivity.this, "需要弹出编辑界面" + position, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "弹出编辑界面" + position, Toast.LENGTH_SHORT).show();
                     Long editId = adapter.getItemId(position);
                     Cursor cursor = adapter.getCursor();
                     cursor.moveToPosition(position);
                     String edittitle = cursor.getString(cursor.getColumnIndex("title"));
                     String editcontent = cursor.getString(cursor.getColumnIndex("content"));
                     String editdate = cursor.getString(cursor.getColumnIndex("date"));
+                    String editclass = cursor.getString(cursor.getColumnIndex("class"));
                     Intent intent = new Intent(MainActivity.this,EditNoteActivity.class);
                     intent.putExtra("edittitle",edittitle);
                     intent.putExtra("editcontent",editcontent);
                     intent.putExtra("editdate",editdate);
+                    intent.putExtra("editclass",editclass);
                     startActivityForResult(intent,101);
                 }
             }
@@ -141,7 +155,7 @@ public class MainActivity extends AppCompatActivity
         cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (adapter.ismultiMode){
+                if (adapter.ismultiMode) {
                     cancelAction();
                 }
             }
@@ -166,7 +180,7 @@ public class MainActivity extends AppCompatActivity
 
                   adapter.notifyDataSetChanged();
                   delete.setText("删除(" + adapter.getCount() + ")");
-                  Log.d("count",adapter.getCount()+"");
+                  Log.d("count", adapter.getCount() + "");
               }
             }
         });
@@ -194,6 +208,22 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+        searchEdit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                //Toast.makeText(MainActivity.this,"test",Toast.LENGTH_SHORT).show();
+                searchEdit.setVisibility(View.GONE);
+                String Categories = searchEdit.getText().toString();
+                Cursor cursor = noteDb.search(Categories);
+                adapter.changeCursor(cursor);
+                adapter.notifyDataSetChanged();
+                searchEdit.setText("");
+                note_new.setVisibility(View.VISIBLE);
+                isHomeFlag = 2;
+                return true;
+            }
+        });
+
     }
 
     @Override
@@ -218,9 +248,16 @@ public class MainActivity extends AppCompatActivity
             drawer.closeDrawer(GravityCompat.START);
         } else if (adapter.ismultiMode){
           cancelAction();
+        }else if (isHomeFlag == 2){
+            Cursor cursor = noteDb.queryAll();
+            adapter.changeCursor(cursor);
+            adapter.notifyDataSetChanged();
+            isHomeFlag = 1;
         }else {
             super.onBackPressed();
         }
+
+
     }
 
     private void cancelAction(){
@@ -255,7 +292,8 @@ public class MainActivity extends AppCompatActivity
             startActivity(intent);
             return true;
         }else if (id == R.id.action_search){
-
+            searchEdit.setVisibility(View.VISIBLE);
+            note_new.setVisibility(View.GONE);
         }
 
         return super.onOptionsItemSelected(item);
@@ -269,20 +307,40 @@ public class MainActivity extends AppCompatActivity
 
         if (id == R.id.nav_all) {
             // Handle the camera action
-
-
+            Cursor cursor = noteDb.queryAll();
+            adapter.changeCursor(cursor);
+            adapter.notifyDataSetChanged();
+            toolbar.setTitle("全部");
         } else if (id == R.id.nav_work) {
-
-
+            Cursor cursor = noteDb.queryWorkClass();
+            adapter.changeCursor(cursor);
+            adapter.notifyDataSetChanged();
+            toolbar.setTitle("工作");
            /* toolbar = (Toolbar) findViewById(R.id.toolbar);
             toolbar.setTitle("工作");
             setSupportActionBar(toolbar);*/
         } else if (id == R.id.nav_life) {
-
+            Cursor cursor = noteDb.queryLifeClass();
+            adapter.changeCursor(cursor);
+            adapter.notifyDataSetChanged();
+            toolbar.setTitle("生活");
         } else if (id == R.id.nav_other) {
+            Cursor cursor = noteDb.queryOtherClass();
+            adapter.changeCursor(cursor);
+            adapter.notifyDataSetChanged();
+            toolbar.setTitle("其他");
 
         } else if (id == R.id.nav_share) {
+            if (SPHelper.getNightMode(this)){
+                SPHelper.putNightMode(false);
 
+            }else {
+                SPHelper.putNightMode(true);
+            }
+            Intent intent = getIntent();
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            overridePendingTransition(0,0);
         } else if (id == R.id.nav_about) {
             Intent intent = new Intent(MainActivity.this,AboutActivity.class);
             startActivity(intent);

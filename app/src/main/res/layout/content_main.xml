@@ -19,6 +19,9 @@
         android:layout_height="wrap_content"
         android:hint="搜索"
         android:visibility="gone"
+        android:imeOptions="actionSearch"
+        android:maxLines="2"
+        android:inputType="text"
         />
 
     <ListView
@@ -36,7 +39,6 @@
         android:layout_alignParentBottom="true"
         android:layout_height="wrap_content"
         android:text="新增便签"
-        android:textColor="@color/colorAccent"
         />
 
     <LinearLayout

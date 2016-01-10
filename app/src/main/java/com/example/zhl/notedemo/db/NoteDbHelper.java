@@ -13,7 +13,8 @@ public class NoteDbHelper extends SQLiteOpenHelper {
             +"_id integer primary key autoincrement,"
             +"title text,"
             +"content text,"
-            +"date text)";
+            +"date text,"
+            +"class text)";
 
     public NoteDbHelper(Context context,String name,SQLiteDatabase.CursorFactory cursorFactory,int version){
         super(context,name,null,version);
@@ -27,6 +28,10 @@ public class NoteDbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
+        switch (oldVersion){
+            case 1:
+                db.execSQL("alter table note add column class text");
+            default:
+        }
     }
 }

@@ -7,6 +7,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.support.v7.widget.ShareActionProvider;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.zhl.notedemo.R;
@@ -23,8 +28,11 @@ public class EditNoteActivity extends AppCompatActivity {
 
     private TextView title,content,date;
     private NoteDb noteDb;
-    private String starttempdate,starttempcontent,starttemptitle;
+    private String starttempdate,starttempcontent,starttemptitle,starttempclass;
     private ShareActionProvider mShareActionProvider;
+    private Button note_class;
+    private ListView noteClassListView;
+    private String[] listClass = {"全部","工作","生活","其他"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,39 +42,71 @@ public class EditNoteActivity extends AppCompatActivity {
         title = (TextView) findViewById(R.id.title);
         content = (TextView) findViewById(R.id.content);
         date = (TextView) findViewById(R.id.date);
+        note_class = (Button) findViewById(R.id.note_class);
 
         Intent intent = getIntent();
         starttempdate = intent.getStringExtra("editdate");
-        if (starttempdate == null){
-            return;
+        if (starttempdate != null){
+            starttemptitle = intent.getStringExtra("edittitle");
+            starttempcontent = intent.getStringExtra("editcontent");
+            starttempclass = intent.getStringExtra("editclass");
+            title.setText(starttemptitle);
+            content.setText(starttempcontent);
+            date.setText(starttempdate);
+            note_class.setText(starttempclass);
+
         }
-        starttemptitle = intent.getStringExtra("edittitle");
-        starttempcontent = intent.getStringExtra("editcontent");
-        title.setText(starttemptitle);
-        content.setText(starttempcontent);
-        date.setText(starttempdate);
+
+        note_class = (Button) findViewById(R.id.note_class);
+        noteClassListView = (ListView) findViewById(R.id.list_class);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(EditNoteActivity.this,android.R.layout.simple_list_item_1,listClass);
+        noteClassListView.setAdapter(adapter);
+        note_class.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                noteClassListView.setVisibility(View.VISIBLE);
+            }
+        });
+
+        noteClassListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String select = listClass[position];
+                note_class.setText(select);
+                noteClassListView.setVisibility(View.GONE);
+            }
+        });
     }
 
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
-        String tempTitle = title.getText().toString();
-        String tempContent = content.getText().toString();
 
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        Date date = new Date();
-        String tempDate = dateFormat.format(date);
-        noteDb = NoteDb.getInstance(this);
-
-        if (starttempdate == null){
-
-            noteDb.saveNote(tempTitle,tempContent,tempDate);
-        }else if (tempTitle == starttemptitle&&tempContent == starttempcontent){
-            return;
+        if (noteClassListView.getVisibility() == View.VISIBLE){
+            noteClassListView.setVisibility(View.INVISIBLE);
         }else {
-            noteDb.updateNote(tempTitle, tempContent, tempDate,starttempdate);
+            super.onBackPressed();
+            String tempTitle = title.getText().toString();
+            String tempContent = content.getText().toString();
+            String tempClass = note_class.getText().toString();
+
+            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            Date date = new Date();
+            String tempDate = dateFormat.format(date);
+            noteDb = NoteDb.getInstance(this);
+
+            if (starttempdate == null){
+
+                noteDb.saveNote(tempTitle,tempContent,tempDate,tempClass);
+            }else if (tempTitle == starttemptitle&&tempContent == starttempcontent){
+                return;
+            }else if (starttemptitle.equals(tempTitle)&&starttempcontent.equals(tempContent)&&starttempclass.equals(tempClass)){
+                return;
+            }else {
+                noteDb.updateNote(tempTitle, tempContent, tempDate,starttempdate,tempClass);
+            }
         }
+
 
 
 /*        if (tempContent.equals("")&&tempTitle.equals("")){
