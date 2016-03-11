@@ -1,8 +1,10 @@
 package com.example.zhl.notedemo.ui;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatDelegate;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -25,7 +27,6 @@ import android.widget.Toast;
 
 import com.example.zhl.notedemo.R;
 import com.example.zhl.notedemo.db.NoteDb;
-import com.example.zhl.notedemo.utils.SPHelper;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -330,17 +331,17 @@ public class MainActivity extends AppCompatActivity
             adapter.notifyDataSetChanged();
             toolbar.setTitle("其他");
 
-        } else if (id == R.id.nav_share) {
-            if (SPHelper.getNightMode(this)){
-                SPHelper.putNightMode(false);
-
+        } else if (id == R.id.nav_share) {     //夜间模式
+            SharedPreferences spf = getSharedPreferences("config",MODE_PRIVATE);
+            boolean isNightMode = spf.getBoolean("theme_value",false);
+            if (isNightMode){
+                getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                spf.edit().putBoolean("theme_value",false).commit();
             }else {
-                SPHelper.putNightMode(true);
+                getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                spf.edit().putBoolean("theme_value",true).commit();
             }
-            Intent intent = getIntent();
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(intent);
-            overridePendingTransition(0,0);
+            recreate();
         } else if (id == R.id.nav_about) {
             Intent intent = new Intent(MainActivity.this,AboutActivity.class);
             startActivity(intent);
