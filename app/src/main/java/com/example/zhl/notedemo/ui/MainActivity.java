@@ -335,10 +335,12 @@ public class MainActivity extends AppCompatActivity
             SharedPreferences spf = getSharedPreferences("config",MODE_PRIVATE);
             boolean isNightMode = spf.getBoolean("theme_value",false);
             if (isNightMode){
-                getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                //getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_NO);
                 spf.edit().putBoolean("theme_value",false).commit();
             }else {
-                getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                //getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_YES);
                 spf.edit().putBoolean("theme_value",true).commit();
             }
             recreate();

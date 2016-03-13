@@ -1,9 +1,12 @@
 package com.example.zhl.notedemo.ui;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.AppCompatDelegate;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.support.v7.widget.ShareActionProvider;
@@ -27,6 +30,7 @@ import java.util.Date;
 public class EditNoteActivity extends AppCompatActivity {
 
     private TextView title,content,date;
+    private Toolbar mToolbar;
     private NoteDb noteDb;
     private String starttempdate,starttempcontent,starttemptitle,starttempclass;
     private ShareActionProvider mShareActionProvider;
@@ -39,10 +43,22 @@ public class EditNoteActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.edit_note);
 
+        mToolbar = (Toolbar) findViewById(R.id.toolbar);
         title = (TextView) findViewById(R.id.title);
         content = (TextView) findViewById(R.id.content);
         date = (TextView) findViewById(R.id.date);
         note_class = (Button) findViewById(R.id.note_class);
+
+
+        setSupportActionBar(mToolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setTitle("编辑");
+        mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBackPressed();
+            }
+        });
 
         Intent intent = getIntent();
         starttempdate = intent.getStringExtra("editdate");
